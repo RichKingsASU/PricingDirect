@@ -98,3 +98,94 @@ def get_customer_rate_lanes(request, pk=None):
             return JsonResponse({'error': str(e)}, status=400)
 
     return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+
+def get_rates_lanes(request):
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    try:
+        org_id = request.GET.get('orgId')
+        org = resolve_user_organization(request, supplied_org_id=org_id)
+    except (OrganizationRequiredError, ValueError) as e:
+        return JsonResponse({'error': str(e)}, status=404)
+    except OrganizationUnauthorizedError as e:
+        if not request.user.is_authenticated:
+            return JsonResponse({'error': 'Not authenticated'}, status=401)
+        return JsonResponse({'error': str(e)}, status=404)
+
+    qs = CustomerRateLane.objects.filter(organization=org)
+
+    # Filtering
+    customer_name = request.GET.get('customer_name')
+    if customer_name:
+        qs = qs.filter(customer_name__icontains=customer_name)
+    origin_city = request.GET.get('origin_city')
+    if origin_city:
+        qs = qs.filter(origin_city__iexact=origin_city)
+    destination_city = request.GET.get('destination_city')
+    if destination_city:
+        qs = qs.filter(destination_city__iexact=destination_city)
+    active_state = request.GET.get('active_state')
+    if active_state:
+        qs = qs.filter(active_state=active_state)
+    status_param = request.GET.get('status')
+    if status_param:
+        qs = qs.filter(status=status_param)
+        
+    # Ordering
+    ordering = request.GET.get('ordering')
+    valid_orderings = [
+        'effective_date', '-effective_date',
+        'expiration_date', '-expiration_date',
+        'base_rate', '-base_rate',
+        'customer_name', '-customer_name'
+    ]
+    if ordering in valid_orderings:
+        qs = qs.order_by(ordering)
+    else:
+        qs = qs.order_by('id')
+
+    # Pagination
+    try:
+        limit = int(request.GET.get('limit', 50))
+        offset = int(request.GET.get('offset', 0))
+    except ValueError:
+        return JsonResponse({'error': 'Invalid pagination parameters'}, status=400)
+        
+    if limit > 100:
+        limit = 100
+
+    total_count = qs.count()
+    qs = qs[offset:offset+limit]
+
+    data = []
+    for crl in qs:
+        data.append({
+            'id': str(crl.id),
+            'organization_id': str(crl.organization_id),
+            'lane_id': crl.lane_id,
+            'customer_name': crl.customer_name,
+            'origin_city': crl.origin_city,
+            'origin_state': crl.origin_state,
+            'raw_origin': crl.raw_origin,
+            'destination_city': crl.destination_city,
+            'destination_state': crl.destination_state,
+            'raw_destination': crl.raw_destination,
+            'base_rate': str(crl.base_rate),
+            'equipment': crl.equipment,
+            'service_type': crl.service_type,
+            'miles': crl.miles,
+            'status': crl.status,
+            'active_state': crl.active_state,
+            'effective_date': crl.effective_date.isoformat() if crl.effective_date else None,
+            'expiration_date': crl.expiration_date.isoformat() if crl.expiration_date else None,
+            'fuel_surcharge_percent': str(crl.fuel_surcharge_percent),
+            'fuel_amount': str(crl.fuel_amount),
+            'total_billing': str(crl.total_billing)
+        })
+
+    return JsonResponse({
+        'count': total_count,
+        'results': data
+    }, safe=False)
