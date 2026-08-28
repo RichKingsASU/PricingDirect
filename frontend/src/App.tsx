@@ -208,7 +208,7 @@ export default function App() {
     setDatasets((prev) =>
       prev.map((ds, idx) =>
         idx === 0
-          ? { ...ds, lastUpload: \Just now (\) by \\, recordsCount: ds.recordsCount + 450 }
+          ? { ...ds, lastUpload: `Just now (${filename}) by ${user.username}`, recordsCount: ds.recordsCount + 450 }
           : ds
       )
     );
@@ -216,7 +216,7 @@ export default function App() {
 
   const handleAddCustomer = async (cust: { name: string; code: string }) => {
     const newLaneData: Partial<CustomerRateLane> = {
-      laneId: \\-001\, customerName: cust.name, originCity: 'Oakland', originState: 'CA', rawOrigin: 'OICT SSA Terminal Oakland', destinationCity: 'Stockton', destinationState: 'CA', rawDestination: 'Amazon TCY2 Stockton', baseRate: 780, fuelSurchargePercent: 14.5, fuelAmount: 113.1, totalBilling: 893.1, effectiveDate: '2026-07-01', expirationDate: '2027-06-30', reviewDate: '2026-10-01', status: 'AWARDED', activeState: 'Active', miles: 78, equipment: '53ft Dry Van', serviceType: 'Import Drayage', accessorials: [{ id: 'acc-1', name: 'Chassis Split', rate: 125, applicability: 'Per Container', effectiveDate: '2026-07-01' }], recommendedCarriers: [], carrierTargetMatch: { matchPercent: 100, targetAmount: 780, nearestLane: 'Oakland, CA -> Stockton, CA' }, rateHistory: [{ amount: 780, effectiveRange: '2026-07-01 to Present', status: 'Current' }]
+      laneId: `${cust.code || 'CUST'}-001`, customerName: cust.name, originCity: 'Oakland', originState: 'CA', rawOrigin: 'OICT SSA Terminal Oakland', destinationCity: 'Stockton', destinationState: 'CA', rawDestination: 'Amazon TCY2 Stockton', baseRate: 780, fuelSurchargePercent: 14.5, fuelAmount: 113.1, totalBilling: 893.1, effectiveDate: '2026-07-01', expirationDate: '2027-06-30', reviewDate: '2026-10-01', status: 'AWARDED', activeState: 'Active', miles: 78, equipment: '53ft Dry Van', serviceType: 'Import Drayage', accessorials: [{ id: 'acc-1', name: 'Chassis Split', rate: 125, applicability: 'Per Container', effectiveDate: '2026-07-01' }], recommendedCarriers: [], carrierTargetMatch: { matchPercent: 100, targetAmount: 780, nearestLane: 'Oakland, CA -> Stockton, CA' }, rateHistory: [{ amount: 780, effectiveRange: '2026-07-01 to Present', status: 'Current' }]
     };
     await rateRepository.addCustomerLane(newLaneData);
     const updatedRates = await rateRepository.getCustomerRates();

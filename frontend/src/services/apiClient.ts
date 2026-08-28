@@ -24,7 +24,7 @@ export const apiClient = {
     const response = await fetch(url + query);
     if (!response.ok) {
       const data = await response.json().catch(() => null);
-      throw new ApiError(response.status, data, API request failed: \);
+      throw new ApiError(response.status, data, `API request failed: ${response.statusText}`);
     }
     return response.json();
   }
