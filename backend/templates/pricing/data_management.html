@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold text-dark m-0">Data Management</h2>
+        <p class="text-muted small m-0 mt-1">Manage rate lanes, adjustments, and exceptions</p>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white border-bottom pt-4 pb-0 px-4">
+        <ul class="nav nav-tabs border-bottom-0" id="dataManagementTabs">
+            <li class="nav-item">
+                <a class="nav-link {% if tab == 'lanes' %}active fw-bold text-primary border-bottom border-primary border-3{% else %}text-muted{% endif %}" href="?tab=lanes">Customer Rate Lanes</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if tab == 'adjustments' %}active fw-bold text-primary border-bottom border-primary border-3{% else %}text-muted{% endif %}" href="?tab=adjustments">Pricing Adjustments</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if tab == 'exceptions' %}active fw-bold text-primary border-bottom border-primary border-3{% else %}text-muted{% endif %}" href="?tab=exceptions">Lane Exceptions</a>
+            </li>
+        </ul>
+    </div>
+    <div class="card-body p-0">
+        {% if tab == 'lanes' %}
+        <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light">
+                <tr>
+                    <th class="px-4 py-3 text-muted fw-bold text-uppercase" style="font-size: 11px;">Lane ID</th>
+                    <th class="px-4 py-3 text-muted fw-bold text-uppercase" style="font-size: 11px;">Customer</th>
+                    <th class="px-4 py-3 text-muted fw-bold text-uppercase" style="font-size: 11px;">Origin / Dest</th>
+                    <th class="px-4 py-3 text-muted fw-bold text-uppercase" style="font-size: 11px;">Base Rate</th>
+                    <th class="px-4 py-3 text-muted fw-bold text-uppercase text-end" style="font-size: 11px;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for lane in lanes %}
+                <tr>
+                    <td class="px-4 py-3 fw-bold">{{ lane.lane_id }}</td>
+                    <td class="px-4 py-3">{{ lane.customer_name }}</td>
+                    <td class="px-4 py-3">{{ lane.origin_city }} → {{ lane.destination_city }}</td>
+                    <td class="px-4 py-3">${{ lane.base_rate }}</td>
+                    <td class="px-4 py-3 text-end">
+                        <a href="{% url 'edit_lane_data' lane.id %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center p-4">No lanes found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% elif tab == 'adjustments' %}
+        <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light">
+                <tr>
+                    <th class="px-4 py-3 text-muted fw-bold text-uppercase" style="font-size: 11px;">Title</th>
+                    <th class="px-4 py-3 text-muted fw-bold text-uppercase" style="font-size: 11px;">Change %</th>
+                    <th class="px-4 py-3 text-muted fw-bold text-uppercase" style="font-size: 11px;">Status</th>
+                    <th class="px-4 py-3 text-muted fw-bold text-uppercase" style="font-size: 11px;">Effective</th>
+                    <th class="px-4 py-3 text-muted fw-bold text-uppercase text-end" style="font-size: 11px;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for adj in adjustments %}
+                <tr>
+                    <td class="px-4 py-3 fw-bold">{{ adj.title }}</td>
+                    <td class="px-4 py-3">{{ adj.change_percent }}%</td>
+                    <td class="px-4 py-3">{{ adj.status }}</td>
+                    <td class="px-4 py-3">{{ adj.effective_date }}</td>
+                    <td class="px-4 py-3 text-end">
+                        <a href="{% url 'edit_adjustment' adj.id %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center p-4">No adjustments found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% elif tab == 'exceptions' %}
+        <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light">
+                <tr>
+                    <th class="px-4 py-3 text-muted fw-bold text-uppercase" style="font-size: 11px;">Lane</th>
+                    <th class="px-4 py-3 text-muted fw-bold text-uppercase" style="font-size: 11px;">Market</th>
+                    <th class="px-4 py-3 text-muted fw-bold text-uppercase" style="font-size: 11px;">Variance</th>
+                    <th class="px-4 py-3 text-muted fw-bold text-uppercase" style="font-size: 11px;">Status</th>
+                    <th class="px-4 py-3 text-muted fw-bold text-uppercase text-end" style="font-size: 11px;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for exc in exceptions %}
+                <tr>
+                    <td class="px-4 py-3 fw-bold">{{ exc.origin }} → {{ exc.destination }}</td>
+                    <td class="px-4 py-3">{{ exc.market }}</td>
+                    <td class="px-4 py-3">{{ exc.var_percent }}%</td>
+                    <td class="px-4 py-3">{{ exc.adjustment_status|default:"-" }}</td>
+                    <td class="px-4 py-3 text-end">
+                        <a href="{% url 'edit_exception' exc.id %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center p-4">No exceptions found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

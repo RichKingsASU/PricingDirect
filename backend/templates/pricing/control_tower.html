@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold text-[#0B1930] m-0">Target Control Tower</h2>
+        <p class="text-muted small m-0 mt-1">Monitor market target performance and active exceptions</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="#" class="btn btn-outline-secondary fw-bold bg-white text-[#45474d] d-flex align-items-center gap-1">
+            <span class="material-symbols-outlined fs-6">download</span> Export Carrier Targets
+        </a>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body bg-white py-3">
+        <form method="GET" action="{% url 'control_tower' %}" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label text-muted fw-bold text-uppercase" style="font-size: 10px;">Select Target Week</label>
+                <select class="form-select form-select-sm fw-bold bg-light">
+                    <option>Current Week (Live)</option>
+                    <option>Next Week (Planned)</option>
+                    <option>Last Week (Actual)</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label text-muted fw-bold text-uppercase" style="font-size: 10px;">Market</label>
+                <select name="region" class="form-select form-select-sm fw-bold bg-light" onchange="this.form.submit()">
+                    <option value="all">All Regions</option>
+                    <option value="NW" {% if selected_region == 'NW' %}selected{% endif %}>NW Region</option>
+                    <option value="SW" {% if selected_region == 'SW' %}selected{% endif %}>SW Region</option>
+                    <option value="NE" {% if selected_region == 'NE' %}selected{% endif %}>NE Region</option>
+                    <option value="SE" {% if selected_region == 'SE' %}selected{% endif %}>SE Region</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label text-muted fw-bold text-uppercase" style="font-size: 10px;">Customer</label>
+                <select name="customer" class="form-select form-select-sm fw-bold bg-light">
+                    <option value="all">All Accounts</option>
+                    <option value="Target Corp">Target Corp</option>
+                    <option value="Walmart">Walmart</option>
+                    <option value="Amazon">Amazon</option>
+                </select>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- KPI Cards -->
+<div class="row g-3 mb-4">
+    <!-- At / Under Target -->
+    <div class="col-md-4">
+        <a href="?kpi=atUnderTarget{% if selected_region != 'all' %}&region={{ selected_region }}{% endif %}" class="text-decoration-none">
+            <div class="card border-0 shadow-sm h-100 {% if kpi_filter == 'atUnderTarget' %}border-start border-4 border-success bg-success-subtle{% else %}bg-white{% endif %}">
+                <div class="card-body">
+                    <span class="font-bold text-[10px] text-muted text-uppercase tracking-wider">At / Under Target</span>
+                    <div class="d-flex align-items-end mt-2">
+                        <span class="fw-bold fs-2 text-success tabular-nums lh-1">{{ kpis.atUnderTarget }}</span>
+                        <span class="ms-2 text-success fw-bold small bg-success-subtle px-1 rounded">{{ kpis.atUnderTargetPercent }}%</span>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- 0-5% Over Target -->
+    <div class="col-md-4">
+        <a href="?kpi=overTarget0to5{% if selected_region != 'all' %}&region={{ selected_region }}{% endif %}" class="text-decoration-none">
+            <div class="card border-0 shadow-sm h-100 {% if kpi_filter == 'overTarget0to5' %}border-start border-4 border-warning bg-warning-subtle{% else %}bg-white{% endif %}">
+                <div class="card-body">
+                    <span class="font-bold text-[10px] text-muted text-uppercase tracking-wider">0-5% Over Target</span>
+                    <div class="d-flex align-items-end mt-2">
+                        <span class="fw-bold fs-2 text-warning tabular-nums lh-1">{{ kpis.overTarget0to5 }}</span>
+                        <span class="ms-2 text-warning fw-bold small bg-warning-subtle px-1 rounded">{{ kpis.overTarget0to5Percent }}%</span>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- >5% Over Target -->
+    <div class="col-md-4">
+        <a href="?kpi=overTarget5Plus{% if selected_region != 'all' %}&region={{ selected_region }}{% endif %}" class="text-decoration-none">
+            <div class="card border-0 shadow-sm h-100 {% if kpi_filter == 'overTarget5Plus' %}border-start border-4 border-danger bg-danger-subtle{% else %}bg-white{% endif %}">
+                <div class="card-body">
+                    <span class="font-bold text-[10px] text-muted text-uppercase tracking-wider">> 5% Over Target</span>
+                    <div class="d-flex align-items-end mt-2">
+                        <span class="fw-bold fs-2 text-danger tabular-nums lh-1">{{ kpis.overTarget5Plus }}</span>
+                        <span class="ms-2 text-danger fw-bold small bg-danger-subtle px-1 rounded">{{ kpis.overTarget5PlusPercent }}%</span>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- Bottom Section: Markets and Exceptions -->
+<div class="row g-3">
+    <!-- Market Summary -->
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white py-3 border-bottom border-light">
+                <h6 class="fw-bold m-0 text-uppercase" style="font-size: 11px;">Market Overview</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush border-0">
+                    {% for mkt in markets %}
+                    <a href="?market={{ mkt.id }}{% if selected_region != 'all' %}&region={{ selected_region }}{% endif %}{% if kpi_filter != 'all' %}&kpi={{ kpi_filter }}{% endif %}" class="list-group-item list-group-item-action border-0 {% if selected_market_id == mkt.id|stringformat:'s' %}bg-primary-subtle border-start border-primary border-4{% endif %}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="fw-bold mb-1" style="font-size: 13px;">{{ mkt.name }}</h6>
+                                <div class="text-muted small">Avg Actual: ${{ mkt.avg_actual }} | Tgt: ${{ mkt.avg_target }}</div>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge {% if mkt.variance_percent > 5 %}bg-danger-subtle text-danger{% elif mkt.variance_percent > 0 %}bg-warning-subtle text-warning{% else %}bg-success-subtle text-success{% endif %} border">
+                                    {{ mkt.variance_percent }}%
+                                </span>
+                                <div class="text-muted mt-1" style="font-size: 10px;">{{ mkt.loads }} Loads</div>
+                            </div>
+                        </div>
+                    </a>
+                    {% empty %}
+                    <div class="p-4 text-center text-muted small">No markets available for this region.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exception Details -->
+    <div class="col-md-8">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white py-3 border-bottom border-light d-flex justify-content-between align-items-center">
+                <h6 class="fw-bold m-0 text-uppercase" style="font-size: 11px;">Active Exceptions</h6>
+                <span class="badge bg-light text-dark border">{{ exceptions|length }} Exceptions</span>
+            </div>
+            <div class="card-body p-0 overflow-auto" style="max-height: 500px;">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light sticky-top">
+                        <tr>
+                            <th class="px-3 py-2 text-muted fw-bold text-uppercase" style="font-size: 10px;">Lane</th>
+                            <th class="px-3 py-2 text-muted fw-bold text-uppercase" style="font-size: 10px;">Market</th>
+                            <th class="px-3 py-2 text-muted fw-bold text-uppercase" style="font-size: 10px;">Loads</th>
+                            <th class="px-3 py-2 text-muted fw-bold text-uppercase" style="font-size: 10px;">Variance</th>
+                            <th class="px-3 py-2 text-muted fw-bold text-uppercase" style="font-size: 10px;">Target</th>
+                            <th class="px-3 py-2 text-muted fw-bold text-uppercase" style="font-size: 10px;">Actual</th>
+                            <th class="px-3 py-2 text-muted fw-bold text-uppercase text-end" style="font-size: 10px;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="border-top-0">
+                        {% for exc in exceptions %}
+                        <tr>
+                            <td class="px-3 py-3">
+                                <div class="fw-bold text-dark" style="font-size: 13px;">{{ exc.origin }} → {{ exc.destination }}</div>
+                                <div class="text-muted text-uppercase" style="font-size: 10px;">{{ exc.confidence }} Confidence</div>
+                            </td>
+                            <td class="px-3 py-3"><span class="badge bg-light text-dark border">{{ exc.market }}</span></td>
+                            <td class="px-3 py-3 text-dark fw-bold">{{ exc.loads }}</td>
+                            <td class="px-3 py-3">
+                                <span class="badge {% if exc.var_percent > 5 %}bg-danger-subtle text-danger{% elif exc.var_percent > 0 %}bg-warning-subtle text-warning{% else %}bg-success-subtle text-success{% endif %} border">
+                                    {{ exc.var_percent }}%
+                                </span>
+                                <div class="text-muted mt-1 fw-bold" style="font-size: 11px;">
+                                    {% if exc.var_dollars > 0 %}+${{ exc.var_dollars }}{% else %}-${{ exc.var_dollars|stringformat:"s"|slice:"1:" }}{% endif %}
+                                </div>
+                            </td>
+                            <td class="px-3 py-3 fw-bold text-muted">${{ exc.current_target }}</td>
+                            <td class="px-3 py-3 fw-bold text-dark">${{ exc.avg_actual }}</td>
+                            <td class="px-3 py-3 text-end">
+                                <a href="{% url 'edit_exception' pk=exc.id %}" class="btn btn-sm btn-outline-primary fw-bold px-3">Adjust</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="p-5 text-center text-muted fw-bold">No exceptions found for selected filters.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

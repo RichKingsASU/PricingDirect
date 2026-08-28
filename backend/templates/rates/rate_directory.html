@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card mb-3 shadow-sm border-0">
+    <div class="card-body bg-white pb-2">
+        <form method="GET" action="{% url 'rate_directory' %}" class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label text-muted fw-bold text-uppercase" style="font-size: 10px;">Customer Account</label>
+                <select name="customer" class="form-select form-select-sm fw-bold bg-light" onchange="this.form.submit()">
+                    <option value="all">All Customer Accounts</option>
+                    {% for c in all_customers %}
+                        <option value="{{ c }}" {% if c == selected_customer %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label text-muted fw-bold text-uppercase" style="font-size: 10px;">Status</label>
+                <select name="status_filter" class="form-select form-select-sm fw-bold bg-light" onchange="this.form.submit()">
+                    <option value="Active" {% if status_filter == 'Active' %}selected{% endif %}>Active</option>
+                    <option value="Future" {% if status_filter == 'Future' %}selected{% endif %}>Future</option>
+                    <option value="Expired" {% if status_filter == 'Expired' %}selected{% endif %}>Expired</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label text-muted fw-bold text-uppercase" style="font-size: 10px;">Search Lanes</label>
+                <input type="text" name="search_query" class="form-control form-control-sm fw-bold bg-light" placeholder="Search origin, dest, or customer..." value="{{ search_query }}">
+            </div>
+            <div class="col-md-auto ms-auto">
+                <a href="{% url 'add_rate_lane' %}" class="btn btn-sm btn-primary fw-bold px-3">
+                    <span class="material-symbols-outlined align-middle me-1" style="font-size: 16px;">add_road</span> Add Rate Lane
+                </a>
+            </div>
+        </form>
+
+        <hr class="my-3 text-muted">
+        
+        <form method="GET" action="{% url 'rate_directory' %}" class="row g-2 align-items-center bg-light p-2 rounded border">
+            <div class="col-auto d-flex align-items-center">
+                <span class="material-symbols-outlined text-primary me-2">search_check</span>
+                <div>
+                    <div class="fw-bold" style="font-size: 12px;">Carrier Target Rate Quick Lookup</div>
+                    <div class="text-muted" style="font-size: 10px;">Search target rates by Origin, Destination & Miles</div>
+                </div>
+            </div>
+            <div class="col-auto ms-3">
+                <input type="text" name="origin" class="form-control form-control-sm border-secondary-subtle" placeholder="Origin" value="{{ origin_query }}">
+            </div>
+            <div class="col-auto">
+                <input type="text" name="dest" class="form-control form-control-sm border-secondary-subtle" placeholder="Dest" value="{{ dest_query }}">
+            </div>
+            <div class="col-auto">
+                <input type="number" name="miles" class="form-control form-control-sm border-secondary-subtle" placeholder="Miles" value="{{ miles_query }}">
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-sm btn-secondary fw-bold">Search Target</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row g-0 border bg-white shadow-sm rounded overflow-hidden" style="min-height: 600px;">
+    <!-- Master List -->
+    <div class="col-4 border-end bg-white overflow-auto" style="max-height: 600px;">
+        {% if active_target_benchmark %}
+        <div class="p-3 bg-dark text-white border-bottom border-primary border-4" style="cursor: pointer;">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <span class="badge bg-primary mb-1 text-uppercase" style="font-size: 9px;">Target Rate Benchmark</span>
+                    <h6 class="fw-bold mb-0">{{ active_target_benchmark.originCity }}, {{ active_target_benchmark.originState }} <span class="material-symbols-outlined align-middle mx-1" style="font-size: 14px;">arrow_forward</span> {{ active_target_benchmark.destinationCity }}, {{ active_target_benchmark.destinationState }}</h6>
+                </div>
+                <div class="text-end">
+                    <h5 class="fw-bold text-info mb-0">${{ active_target_benchmark.targetCarrierPay }}</h5>
+                    <small class="text-muted text-uppercase" style="font-size: 9px;">Carrier Pay</small>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% for lane in lanes %}
+        <a href="?lane_id={{ lane.id }}{% if search_query %}&search_query={{ search_query }}{% endif %}{% if selected_customer != 'all' %}&customer={{ selected_customer }}{% endif %}" class="text-decoration-none text-dark">
+            <div class="p-3 border-bottom {% if selected_lane and selected_lane.id == lane.id and not active_target_benchmark %}bg-primary-subtle border-start border-primary border-4{% else %}bg-white text-dark table-hover{% endif %}">
+                <div class="d-flex justify-content-between mb-1">
+                    <div>
+                        <div class="text-primary fw-bold text-uppercase mb-1" style="font-size: 10px;">{{ lane.customer_name }} &bull; {{ lane.lane_id }}</div>
+                        <div class="fw-bold" style="font-size: 13px;">{{ lane.origin_city }}, {{ lane.origin_state }} <span class="material-symbols-outlined align-middle mx-1 text-muted" style="font-size: 12px;">arrow_forward</span> {{ lane.destination_city }}, {{ lane.destination_state }}</div>
+                    </div>
+                    <div class="text-end">
+                        <div class="fw-bold {% if selected_lane and selected_lane.id == lane.id and not active_target_benchmark %}text-primary{% else %}text-dark{% endif %}" style="font-size: 14px;">${{ lane.total_billing }}</div>
+                        <div class="text-primary fw-bold text-uppercase" style="font-size: 9px;">Total Billing</div>
+                    </div>
+                </div>
+                <div class="d-flex gap-2 align-items-center mt-2">
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle">{{ lane.status }}</span>
+                    <span class="badge bg-success-subtle text-success border border-success-subtle">{{ lane.active_state }}</span>
+                    <span class="badge bg-light text-dark border">LH: ${{ lane.base_rate }}</span>
+                    <span class="ms-auto text-muted fw-bold" style="font-size: 11px;"><span class="material-symbols-outlined align-middle" style="font-size: 14px;">straighten</span> {{ lane.miles }} Mi</span>
+                </div>
+            </div>
+        </a>
+        {% empty %}
+            {% if not active_target_benchmark %}
+            <div class="p-5 text-center text-muted">
+                <span class="material-symbols-outlined fs-1">search_off</span>
+                <p class="mt-2 fw-bold">No customer rate lanes found</p>
+            </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+
+    <!-- Detail Panel -->
+    <div class="col-8 p-4 bg-light overflow-auto" style="max-height: 600px;">
+        {% if active_target_benchmark %}
+            <div class="card bg-dark text-white border-0 shadow-sm mb-4">
+                <div class="card-body p-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="badge bg-primary mb-2 text-uppercase">Carrier Target Benchmark Result</span>
+                        <h3 class="fw-bold mb-1">{{ active_target_benchmark.originCity }}, {{ active_target_benchmark.originState }} <span class="material-symbols-outlined align-middle text-info mx-1">arrow_forward</span> {{ active_target_benchmark.destinationCity }}, {{ active_target_benchmark.destinationState }}</h3>
+                        <div class="text-muted" style="font-size: 12px;">Distance: <strong class="text-white">{{ active_target_benchmark.miles }} Miles</strong> &bull; Region: <strong class="text-white">{{ active_target_benchmark.regionCode }} Market</strong></div>
+                    </div>
+                    <div>
+                        <a href="{% url 'add_rate_lane' %}?origin={{ active_target_benchmark.originCity }}&dest={{ active_target_benchmark.destinationCity }}&miles={{ active_target_benchmark.miles }}&base_rate={{ active_target_benchmark.targetCarrierPay }}" class="btn btn-primary fw-bold"><span class="material-symbols-outlined align-middle me-1">add_road</span> Create Customer Lane</a>
+                    </div>
+                </div>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="card border-primary border-2 h-100">
+                        <div class="card-body">
+                            <div class="text-primary fw-bold text-uppercase mb-1" style="font-size: 11px;">Carrier Target Pay</div>
+                            <h2 class="fw-bold mb-0">${{ active_target_benchmark.targetCarrierPay }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="text-muted fw-bold text-uppercase mb-1" style="font-size: 11px;">Target Rate Per Mile</div>
+                            <h2 class="fw-bold mb-0">${{ active_target_benchmark.ratePerMile }} <span class="fs-6 text-muted">/ mi</span></h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="text-muted fw-bold text-uppercase mb-1" style="font-size: 11px;">Market Region</div>
+                            <h2 class="fw-bold mb-0">{{ active_target_benchmark.regionCode }} Region</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% elif selected_lane %}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="badge bg-primary-subtle text-primary border mb-2 text-uppercase">{{ selected_lane.customer_name }}</span>
+                        <h3 class="fw-bold mb-1">{{ selected_lane.origin_city }}, {{ selected_lane.origin_state }} <span class="material-symbols-outlined align-middle text-primary mx-1">arrow_forward</span> {{ selected_lane.destination_city }}, {{ selected_lane.destination_state }}</h3>
+                        <div class="text-muted" style="font-size: 12px;">Raw Origin: <strong>{{ selected_lane.raw_origin }}</strong> | Raw Destination: <strong>{{ selected_lane.raw_destination }}</strong></div>
+                    </div>
+                    <div>
+                        <a href="{% url 'edit_lane_data' lane_id=selected_lane.id %}" class="btn btn-primary fw-bold"><span class="material-symbols-outlined align-middle me-1">edit</span> Edit Rate & Target</a>
+                    </div>
+                </div>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="card border-primary border h-100 bg-primary-subtle">
+                        <div class="card-body">
+                            <div class="text-primary fw-bold text-uppercase mb-1" style="font-size: 11px;">LINEHAUL RATE (BASE)</div>
+                            <h2 class="fw-bold text-primary mb-0">${{ selected_lane.base_rate }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-success border h-100 bg-success-subtle">
+                        <div class="card-body">
+                            <div class="text-success fw-bold text-uppercase mb-1" style="font-size: 11px;">FUEL SURCHARGE ({{ selected_lane.fuel_surcharge_percent }}%)</div>
+                            <h2 class="fw-bold text-success mb-0">${{ selected_lane.fuel_amount }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-dark text-white h-100">
+                        <div class="card-body">
+                            <div class="text-light fw-bold text-uppercase mb-1" style="font-size: 11px;">TOTAL CUSTOMER BILLING</div>
+                            <h2 class="fw-bold mb-0">${{ selected_lane.total_billing }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

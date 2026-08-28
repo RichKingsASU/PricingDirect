@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card shadow-sm border-0 max-w-lg mx-auto" style="max-width: 800px;">
+    <div class="card-header bg-primary text-white fw-bold d-flex align-items-center">
+        <span class="material-symbols-outlined me-2">add_road</span> Add Customer Rate Lane
+    </div>
+    <div class="card-body p-4">
+        <form method="POST" action="{% url 'add_rate_lane' %}">
+            {% csrf_token %}
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold" style="font-size: 12px;">Lane ID</label>
+                    <input type="text" name="lane_id" class="form-control form-control-sm" required placeholder="e.g. AMZ-001">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold" style="font-size: 12px;">Customer Name</label>
+                    <input type="text" name="customer_name" class="form-control form-control-sm" required>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <div class="p-3 border rounded bg-light">
+                        <h6 class="fw-bold text-primary mb-3">Origin</h6>
+                        <div class="mb-2">
+                            <label class="form-label fw-bold" style="font-size: 11px;">City</label>
+                            <input type="text" name="origin_city" class="form-control form-control-sm" value="{{ request.GET.origin }}" required>
+                        </div>
+                        <div>
+                            <label class="form-label fw-bold" style="font-size: 11px;">State</label>
+                            <input type="text" name="origin_state" class="form-control form-control-sm" value="CA" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="p-3 border rounded bg-light">
+                        <h6 class="fw-bold text-primary mb-3">Destination</h6>
+                        <div class="mb-2">
+                            <label class="form-label fw-bold" style="font-size: 11px;">City</label>
+                            <input type="text" name="destination_city" class="form-control form-control-sm" value="{{ request.GET.dest }}" required>
+                        </div>
+                        <div>
+                            <label class="form-label fw-bold" style="font-size: 11px;">State</label>
+                            <input type="text" name="destination_state" class="form-control form-control-sm" value="NV" required>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold" style="font-size: 12px;">Base Rate (Linehaul)</label>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text">$</span>
+                        <input type="number" step="0.01" name="base_rate" class="form-control" value="{{ request.GET.base_rate }}" required>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold" style="font-size: 12px;">Miles</label>
+                    <div class="input-group input-group-sm">
+                        <input type="number" name="miles" class="form-control" value="{{ request.GET.miles|default:'100' }}" required>
+                        <span class="input-group-text">mi</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold" style="font-size: 12px;">Equipment</label>
+                    <select name="equipment" class="form-select form-select-sm">
+                        <option value="53ft Dry Van">53ft Dry Van</option>
+                        <option value="40ft Container">40ft Container</option>
+                        <option value="20ft Container">20ft Container</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                <a href="{% url 'rate_directory' %}" class="btn btn-light fw-bold border">Cancel</a>
+                <button type="submit" class="btn btn-primary fw-bold">Save Rate Lane</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
