@@ -128,7 +128,7 @@ export default function App() {
         setCustomerLanes(prev => prev.map(l => l.id === res.id ? res : l));
       }
     }
-    setAdjustItem(null);
+    } catch (e: any) { alert(e.message); } setAdjustItem(null);
   };
 
   const handleResolveMapIssue = async (issueId: string, suggestion?: string) => {
