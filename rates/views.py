@@ -43,7 +43,7 @@ def rate_directory(request):
     lanes = lanes.filter(active_state=status_filter)
     
     # Extract unique customer names for dropdown
-    all_customers = list(CustomerRateLane.objects.values_list('customer_name', flat=True).distinct())
+    all_customers = list(CustomerRateLane.objects.filter(organization=org).values_list('customer_name', flat=True).distinct())
     if not all_customers:
         all_customers = ['Amazon Logistics, Inc.', 'Walmart Distribution']
         
@@ -57,22 +57,26 @@ def rate_directory(request):
         rate_per_mile = "{:.2f}".format(target_pay / miles_number) if miles_number else "0.00"
         
         # Determine source label
-        from pricing.services.target_master_data import get_system_target_pay
+        from pricing.services.target_master_data import get_system_target_pay, get_city_location
         is_system = get_system_target_pay(origin_query, dest_query) is not None
         source_label = 'Forrest Master System Target Directory' if is_system else (
             f'Calculated Mileage Benchmark ($320 base + $3.80/mi)' if m_val > 0 else 'Regional Drayage Market Benchmark'
         )
-        
+
+        origin_location = get_city_location(origin_query)
+        destination_location = get_city_location(dest_query)
+        region_code = (origin_location or destination_location or {}).get('region', 'N/A')
+
         active_target_benchmark = {
             'originCity': origin_query.title() or 'Origin',
-            'originState': 'CA',
+            'originState': (origin_location or {}).get('state', ''),
             'destinationCity': dest_query.title() or 'Destination',
-            'destinationState': 'NV',
+            'destinationState': (destination_location or {}).get('state', ''),
             'targetCarrierPay': target_pay,
             'miles': miles_number,
             'ratePerMile': rate_per_mile,
             'sourceLabel': source_label,
-            'regionCode': 'SW'
+            'regionCode': region_code
         }
 
     selected_lane_id = request.GET.get('lane_id')

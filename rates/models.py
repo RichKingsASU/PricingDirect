@@ -1,3 +1,5 @@
+from decimal import Decimal, ROUND_HALF_UP
+
 from django.db import models
 from django.contrib.auth.models import User
 from customers.models import Organization
@@ -49,6 +51,14 @@ class CustomerRateLane(models.Model):
             models.CheckConstraint(condition=models.Q(base_rate__gte=0), name='rates_base_rate_non_negative'),
             models.CheckConstraint(condition=models.Q(miles__gte=0), name='rates_miles_non_negative'),
         ]
+
+    def save(self, *args, **kwargs):
+        cents = Decimal('0.01')
+        base_rate = Decimal(str(self.base_rate))
+        fuel_surcharge_percent = Decimal(str(self.fuel_surcharge_percent))
+        self.fuel_amount = (base_rate * fuel_surcharge_percent / 100).quantize(cents, rounding=ROUND_HALF_UP)
+        self.total_billing = (base_rate + self.fuel_amount).quantize(cents, rounding=ROUND_HALF_UP)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.customer_name}: {self.origin_city} to {self.destination_city}"

@@ -156,7 +156,7 @@
                         <div class="text-muted" style="font-size: 12px;">Raw Origin: <strong>{{ selected_lane.raw_origin }}</strong> | Raw Destination: <strong>{{ selected_lane.raw_destination }}</strong></div>
                     </div>
                     <div>
-                        <button class="btn btn-primary fw-bold"><span class="material-symbols-outlined align-middle me-1">edit</span> Edit Rate & Target</button>
+                        <a href="{% url 'edit_lane_data' lane_id=selected_lane.id %}" class="btn btn-primary fw-bold"><span class="material-symbols-outlined align-middle me-1">edit</span> Edit Rate & Target</a>
                     </div>
                 </div>
             </div>
