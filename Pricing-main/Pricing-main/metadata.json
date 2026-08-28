@@ -1,0 +1,6 @@
+{
+  "name": "Pricing Hub",
+  "description": "Operational Pricing Hub and Target Control Tower for Forrest Logistics rate directories, lane exception management, and bulk data imports.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

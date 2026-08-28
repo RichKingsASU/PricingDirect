@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --navy-deep: #0B1930;
+    --navy-secondary: #13294B;
+    --forrest-blue: #1769FF;
+    --operational-blue: #4F83B8;
+    --selection-blue: #EAF2FF;
+    --workspace-bg: #F4F7FA;
+    --card-bg: #FFFFFF;
+    --text-primary: #14213D;
+    --border-subtle: #D8E1EB;
+    --status-success: #178A68;
+    --status-warning: #D58A16;
+    --status-error: #D64545;
+  }
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  vertical-align: middle;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F4F7FA;
+}
+::-webkit-scrollbar-thumb {
+  background: #D8E1EB;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #75777e;
+}
+
+/* Sparkline animation and styles */
+.sparkline-container {
+  display: flex;
+  align-items: flex-end;
+  height: 32px;
+  gap: 2px;
+}
+.spark-bar {
+  background-color: #1769FF;
+  width: 4px;
+  border-radius: 1px;
+}
