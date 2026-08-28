@@ -784,7 +784,8 @@ export class DemoRateRepository implements IRateRepository {
         updatedMarkets: [...this.markets],
         updatedKpis: { ...this.kpis },
         totalLoadsIngested: 0,
-        lanesUpdated: 0
+        lanesUpdated: 0,
+        newValidationIssues: []
       };
     }
 
@@ -1026,7 +1027,8 @@ export class DemoRateRepository implements IRateRepository {
       updatedMarkets: [...this.markets],
       updatedKpis: { ...this.kpis },
       totalLoadsIngested: totalLoadsCount,
-      lanesUpdated: updatedLanesCount
+      lanesUpdated: updatedLanesCount,
+      newValidationIssues: []
     };
   }
 }

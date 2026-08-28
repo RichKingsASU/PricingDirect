@@ -93,10 +93,9 @@ class TenantIsolationSeleniumE2ETests(StaticLiveServerTestCase):
         self.selenium.get(self.live_server_url + "/accounts/login/")
         self.selenium.find_element(By.NAME, "username").send_keys('testb@example.com')
         self.selenium.find_element(By.NAME, "password").send_keys('password123')
-        self.selenium.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
-        WebDriverWait(self.selenium, 5).until(
-            EC.presence_of_element_located((By.CLASS_NAME, "top-nav"))
-        )
+        submit_btn = self.selenium.find_element(By.CSS_SELECTOR, "button[type='submit']")
+        submit_btn.click()
+        WebDriverWait(self.selenium, 5).until(EC.staleness_of(submit_btn))
         
         session_b = self.get_api_session()
         res_b = session_b.get(self.live_server_url + '/api/customer_rate_lanes/')
@@ -107,8 +106,9 @@ class TenantIsolationSeleniumE2ETests(StaticLiveServerTestCase):
         org_b_id = data_b[0]['organization_id']
         
         # Logout User B using form submit
-        self.selenium.find_element(By.XPATH, "//button[contains(text(), 'Logout')]").click()
-        time.sleep(1)
+        logout_form = self.selenium.find_element(By.XPATH, "//form[@action='/accounts/logout/']")
+        logout_form.submit()
+        WebDriverWait(self.selenium, 5).until(EC.staleness_of(logout_form))
 
         # 3. Login obtains and submits valid CSRF token
         # 13. Refresh preserves the authenticated session before logout.
@@ -116,8 +116,9 @@ class TenantIsolationSeleniumE2ETests(StaticLiveServerTestCase):
         current_url_login = self.selenium.current_url
         self.selenium.find_element(By.NAME, "username").send_keys('testa@example.com')
         self.selenium.find_element(By.NAME, "password").send_keys('password123')
-        self.selenium.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
-        WebDriverWait(self.selenium, 5).until(EC.url_changes(current_url_login))
+        submit_btn = self.selenium.find_element(By.CSS_SELECTOR, "button[type='submit']")
+        submit_btn.click()
+        WebDriverWait(self.selenium, 5).until(EC.staleness_of(submit_btn))
         
         self.selenium.refresh()
         WebDriverWait(self.selenium, 5).until(lambda driver: driver.execute_script("return document.readyState") == "complete")

@@ -24,3 +24,11 @@ staticfiles/
 # OS
 .DS_Store
 Thumbs.db
+# Final Validation Cleanup
+backend/test-artifacts/
+.selenium/
+test-downloads/
+.env.*
+!.env.example
+*.log
+frontend/dist/

@@ -71,6 +71,7 @@ export interface ActualsIngestResult {
   updatedKpis: KPIStats;
   totalLoadsIngested: number;
   lanesUpdated: number;
+  newValidationIssues: ValidationIssue[];
 }
 
 export interface LaneException {

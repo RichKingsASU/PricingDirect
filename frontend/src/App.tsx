@@ -120,9 +120,9 @@ export default function App() {
       if ('origin' in adjustItem) {
         const res = await rateRepository.saveLaneAdjustment(adjustItem.id, updates.targetRate, notes, excludeKeyAccounts);
         if (res.lane) setLaneExceptions(prev => prev.map(e => e.id === res.lane!.id ? res.lane! : e));
-      } else if ('marketId' in adjustItem) {
-        const res = await rateRepository.saveMarketAdjustment(adjustItem.marketId, updates.targetRate, notes, excludeKeyAccounts);
-        setMarkets(prev => prev.map(m => m.marketId === res.marketId ? res : m));
+      } else if ('status' in adjustItem && 'trendStatus' in adjustItem) {
+        const res = await rateRepository.saveMarketAdjustment(adjustItem.id, updates.targetRate, notes, excludeKeyAccounts);
+        setMarkets(prev => prev.map(m => m.id === res.id ? res : m));
       } else if ('laneId' in adjustItem) {
         const res = await rateRepository.updateCustomerLane(adjustItem.id, { baseRate: updates.targetRate });
         setCustomerLanes(prev => prev.map(l => l.id === res.id ? res : l));
