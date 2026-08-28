@@ -168,7 +168,7 @@
                             <td class="px-3 py-3 fw-bold text-muted">${{ exc.current_target }}</td>
                             <td class="px-3 py-3 fw-bold text-dark">${{ exc.avg_actual }}</td>
                             <td class="px-3 py-3 text-end">
-                                <button class="btn btn-sm btn-outline-primary fw-bold px-3">Adjust</button>
+                                <a href="{% url 'edit_exception' pk=exc.id %}" class="btn btn-sm btn-outline-primary fw-bold px-3">Adjust</a>
                             </td>
                         </tr>
                         {% empty %}

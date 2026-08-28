@@ -157,3 +157,19 @@ def get_system_target_pay(pickup_city, delivery_city):
            (t["deliveryCity"].lower() == cons_drop or t["deliveryCity"].lower() == delivery_city.lower()):
             return t["targetCarrierPay"]
     return None
+
+def get_city_location(city):
+    """
+    Look up a city's known state/region using the same master lane data
+    and matching convention as get_system_target_pay, by checking every
+    pickupCity/deliveryCity entry for a match.
+    """
+    if not city: return None
+    cons_city = consolidate_city(city).lower()
+    city_lower = city.lower()
+    for t in SYSTEM_TARGET_RATES:
+        if t["pickupCity"].lower() == cons_city or t["pickupCity"].lower() == city_lower:
+            return {"state": t["pickupState"], "region": t["pickupRegion"]}
+        if t["deliveryCity"].lower() == cons_city or t["deliveryCity"].lower() == city_lower:
+            return {"state": t["deliveryState"], "region": t["dropRegion"]}
+    return None
